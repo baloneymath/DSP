@@ -7,79 +7,6 @@
 
 using namespace std;
 
-void
-buildAlphas(double alphas[MAX_OBSERV][MAX_STATE], const HMM& hmm, const double b[MAX_STATE][MAX_OBSERV])
-{
-  int stateNum = hmm.state_num;
-  int observNum = hmm.observ_num;
-  for (int i = 0; i < stateNum; ++i)
-    alphas[0][i] = hmm.initial[i] * b[i][0];
-  for (int t = 1; t < observNum; ++t) {
-    for (int j = 0; j < stateNum; ++j) {
-      double temp = 0.0;
-      for (int k = 0; k < stateNum; ++k)
-        temp += hmm.transition[k][j] * alphas[t-1][k];
-      alphas[t][j] = temp * b[j][t];
-    }
-  }
-}
-
-void
-buildBetas(double betas[MAX_OBSERV][MAX_STATE], const HMM& hmm, const double b[MAX_STATE][MAX_OBSERV])
-{
-  int stateNum = hmm.state_num;
-  int observNum = hmm.observ_num;
-  for (int i = 0; i < stateNum; ++i)
-    betas[observNum-1][i] = 1;
-  for (int t = observNum-2; t >= 0 ; --t) {
-    for (int i = 0; i < stateNum; ++i){
-      double temp = 0.0;
-      for (int j = 0; j < stateNum; ++j)
-        temp += hmm.transition[i][j] * b[j][t+1] * betas[t+1][j];
-      betas[t][i] = temp;
-    }
-  }
-}
-
-void
-buildGammas(double gammas[MAX_OBSERV][MAX_STATE], const HMM& hmm, const double alphas[MAX_OBSERV][MAX_STATE], const double betas[MAX_OBSERV][MAX_STATE])
-{
-  int stateNum = hmm.state_num;
-  int observNum = hmm.observ_num;
-  for (int t = 0; t < observNum; ++t) {
-    double temp_q = 0.0;
-    for (int k = 0; k < stateNum; ++k)
-      temp_q += alphas[t][k] * betas[t][k];
-    for (int i = 0; i < stateNum; ++i) {
-      gammas[t][i] = alphas[t][i] * betas[t][i] / temp_q;
-    }
-  }
-
-}
-
-void
-buildEpsilons(
-    double epsilons[MAX_OBSERV][MAX_STATE][MAX_STATE],
-    const HMM& hmm,
-    const double alphas[MAX_OBSERV][MAX_STATE],
-    const double betas[MAX_OBSERV][MAX_STATE],
-    const double b[MAX_STATE][MAX_OBSERV]
-    )
-{
-  int stateNum = hmm.state_num;
-  int observNum = hmm.observ_num;
-  for (int t = 0; t < observNum-1; ++t) {
-    double temp_q = 0.0;
-    for (int i = 0; i < stateNum; ++i)
-      for (int j = 0; j < stateNum; ++j)
-        temp_q += alphas[t][i] * hmm.transition[i][j] * b[j][t+1] * betas[t+1][j];
-    for (int i = 0; i < stateNum; ++i)
-      for (int j = 0; j < stateNum; ++j)
-        epsilons[t][i][j]
-          = alphas[t][i] * hmm.transition[i][j] * b[j][t+1] * betas[t+1][j] / temp_q;
-  }
-}
-
 int main(int argc, char * argv[])
 {
   assert(argc == 5);
@@ -96,6 +23,7 @@ int main(int argc, char * argv[])
 
   int N = hmm.state_num;
   double accumGamma[MAX_SEQ][MAX_STATE] = {0.0};
+  double accumGammaFuck[MAX_OBSERV][MAX_STATE] = {0.0};
   double accumEpsilon[MAX_SEQ][MAX_STATE][MAX_STATE] = {0.0};
   auto &pi = hmm.initial;
   auto &b = hmm.observation;
@@ -162,6 +90,7 @@ int main(int argc, char * argv[])
     for (int t = 1; t <= T; ++t) {
       for (int i = 0; i < N; ++i) {
         accumGamma[t][i] += gamma[t][i];
+        accumGammaFuck[o[t]-'A'][i] += gamma[t][i];
       }
     }
     for (int t = 1; t <= T-1; ++t) {
@@ -190,38 +119,19 @@ int main(int argc, char * argv[])
       for (int k = 0; k < hmm.observ_num; ++k) {
         double up = 0.0, down = 0.0;
         for (int t = 1; t <= T; ++t) {
-          if (o[t]-'A' == k) {
-            up += accumGamma[t][i];
-          }
           down += accumGamma[t][i];
         }
+        up = accumGammaFuck[k][i];
         b[k][i] = up / down;
       }
     }
+    /*
+    cerr << _i << ":" << endl;
+    dumpHMM(stdout, &hmm);
+    cerr << endl;
+    */
   }
   dumpHMM(fp, &hmm);
-  /*
-  int stateNum = hmm.state_num;
-  int observNum = hmm.observ_num;
-
-  double b[MAX_STATE][MAX_OBSERV] = {0.0};
-  for (int j = 0; j < stateNum; ++j)
-    for (int k = 0; k < observNum; ++k) // calculate each b_j(o)
-      b[j][k] += hmm.observation[k][j];
-
-  double alphas[MAX_OBSERV][MAX_STATE] = {0.0};
-  buildAlphas(alphas, hmm, b); // create alpha table
-
-  double betas[MAX_OBSERV][MAX_STATE] = {0.0};
-  buildBetas(betas, hmm, b); // create beta table
-
-  double gammas[MAX_OBSERV][MAX_STATE] = {0.0};
-  buildGammas(gammas, hmm, alphas, betas); // create gamma table
-
-   $\epsilon_t (i,j)$
-  double epsilons[MAX_OBSERV][MAX_STATE][MAX_STATE] = {0.0};
-  buildEpsilons(epsilons, hmm, alphas, betas, b); // create epsilon table
-  */
-
+  return 0;
 }
 
