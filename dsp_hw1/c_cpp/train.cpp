@@ -201,6 +201,11 @@ int main(int argc, char * argv[])
         b[k][i] = up / down;
       }
     }
+  /*
+     cerr << _i << ':' << endl;
+     dumpHMM(stderr, &hmm);
+     cerr << endl;
+  */
   }
   dumpHMM(fp, &hmm);
   return 0;
