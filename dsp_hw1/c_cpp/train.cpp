@@ -1,4 +1,11 @@
+#include <string.h>
+#include <stdio.h>
+#include <iostream>
+#include <cassert>
+
 #include "hmm.h"
+
+using namespace std;
 
 void
 buildAlphas(double alphas[MAX_OBSERV][MAX_STATE], const HMM& hmm, const double b[MAX_STATE][MAX_OBSERV])
@@ -73,36 +80,148 @@ buildEpsilons(
   }
 }
 
-int main()
+int main(int argc, char * argv[])
 {
+  assert(argc == 5);
+  int iter = atoi(argv[1]);
+  char * model_init = argv[2];
+  char * model_seq = argv[3];
+  char * model_out = argv[4];
+  FILE * fpseq = open_or_die(model_seq, "r");
+  FILE * fp = open_or_die(model_out, "w");
+
   // Create init
-  HMM hmms[5];
-  load_models("modellist.txt", hmms, 5);
-  dump_models(hmms, 5);
+  HMM hmm, hmm_res;
+  loadHMM(&hmm, model_init);
 
-  for (int i = 0; i < 5; ++i) { // For each hmm model
-    int stateNum = hmms[i].state_num;
-    int observNum = hmms[i].observ_num;
+  int N = hmm.state_num;
+  double accumGamma[MAX_SEQ][MAX_STATE] = {0.0};
+  double accumEpsilon[MAX_SEQ][MAX_STATE][MAX_STATE] = {0.0};
+  auto &pi = hmm.initial;
+  auto &b = hmm.observation;
+  auto &a = hmm.transition;
+  for (int _i = 1; _i <= iter; ++_i) {
+    char o[500];
+    fscanf(fpseq, "%s", &o[1]);
+    int T = strlen(&o[1]);
 
-    double b[MAX_STATE][MAX_OBSERV] = {0.0};
-    for (int j = 0; j < stateNum; ++j)
-      for (int k = 0; k < observNum; ++k) // calculate each b_j(o)
-        b[j][k] += hmms[i].observation[k][j];
+    double alpha[MAX_SEQ][MAX_STATE] = {0.0};
+    for (int i = 0; i < N; ++i) {
+      alpha[1][i] = pi[i] * b[o[1] - 'A'][i];
+    }
+    for (int t = 1; t < T; ++t) {
+      for (int j = 0; j < N; ++j) {
+        double temp = 0.0;
+        for (int i = 0; i < N; ++i) {
+          temp += alpha[t][i] * a[i][j];
+        }
+        alpha[t+1][j] = temp * b[o[t+1] - 'A'][j];
+      }
+    }
 
-    double alphas[MAX_OBSERV][MAX_STATE] = {0.0};
-    buildAlphas(alphas, hmms[i], b); // create alpha table
+    double beta[MAX_SEQ][MAX_STATE] = {0.0};
+    for (int i = 0; i < N; ++i) {
+      beta[T][i] = 1.0;
+    }
+    for (int t = T-1; t >= 1; --t) {
+      for (int i = 0; i < N; ++i) {
+        double temp = 0.0;
+        for (int j = 0; j < N; ++j) {
+          temp += a[i][j] * b[o[t+1]-'A'][j] * beta[t+1][j];
+        }
+        beta[t][i] = temp;
+      }
+    }
 
-    double betas[MAX_OBSERV][MAX_STATE] = {0.0};
-    buildBetas(betas, hmms[i], b); // create beta table
+    double gamma[MAX_SEQ][MAX_STATE] = {0.0};
+    for (int t = 1; t <= T; ++t) {
+      double temp = 0.0;
+      for (int i = 0; i < N; ++i) {
+        temp += alpha[t][i] * beta[t][i];
+      }
+      for (int i = 0; i < N; ++i) {
+        gamma[t][i] = alpha[t][i] * beta[t][i] / temp;
+      }
+    }
 
-    double gammas[MAX_OBSERV][MAX_STATE] = {0.0};
-    buildGammas(gammas, hmms[i], alphas, betas); // create gamma table
+    double epsilon[MAX_SEQ][MAX_STATE][MAX_STATE] = {0.0};
+    for (int t = 1; t <= T-1; ++t) {
+      double temp = 0.0;
+      for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+          temp += alpha[t][i] * a[i][j] * b[o[t+1]-'A'][j] * beta[t+1][j];
+        }
+      }
+      for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+          epsilon[t][i][j] = alpha[t][i] * a[i][j] * b[o[t+1]-'A'][j] * beta[t+1][j] / temp;
+        }
+      }
+    }
 
+    for (int t = 1; t <= T; ++t) {
+      for (int i = 0; i < N; ++i) {
+        accumGamma[t][i] += gamma[t][i];
+      }
+    }
+    for (int t = 1; t <= T-1; ++t) {
+      for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+          accumEpsilon[t][i][j] += epsilon[t][i][j];
+        }
+      }
+    }
 
-    /* $\epsilon_t (i,j)$ */
-    double epsilons[MAX_OBSERV][MAX_STATE][MAX_STATE] = {0.0};
-    buildEpsilons(epsilons, hmms[i], alphas, betas, b);
+    for (int i = 0; i < N; ++i) {
+      pi[i] = accumGamma[1][i] / _i;
+    }
+    for (int i = 0; i < N; ++i) {
+      for (int j = 0; j < N; ++j) {
+        double up = 0.0, down = 0.0;
+        for (int t = 1; t <= T-1; ++t) {
+          up += accumEpsilon[t][i][j];
+          down += accumGamma[t][i];
+        }
+        a[i][j] = up / down;
+      }
+    }
+
+    for (int i = 0; i < N; ++i) {
+      for (int k = 0; k < hmm.observ_num; ++k) {
+        double up = 0.0, down = 0.0;
+        for (int t = 1; t <= T; ++t) {
+          if (o[t]-'A' == k) {
+            up += accumGamma[t][i];
+          }
+          down += accumGamma[t][i];
+        }
+        b[k][i] = up / down;
+      }
+    }
   }
+  dumpHMM(fp, &hmm);
+  /*
+  int stateNum = hmm.state_num;
+  int observNum = hmm.observ_num;
+
+  double b[MAX_STATE][MAX_OBSERV] = {0.0};
+  for (int j = 0; j < stateNum; ++j)
+    for (int k = 0; k < observNum; ++k) // calculate each b_j(o)
+      b[j][k] += hmm.observation[k][j];
+
+  double alphas[MAX_OBSERV][MAX_STATE] = {0.0};
+  buildAlphas(alphas, hmm, b); // create alpha table
+
+  double betas[MAX_OBSERV][MAX_STATE] = {0.0};
+  buildBetas(betas, hmm, b); // create beta table
+
+  double gammas[MAX_OBSERV][MAX_STATE] = {0.0};
+  buildGammas(gammas, hmm, alphas, betas); // create gamma table
+
+   $\epsilon_t (i,j)$
+  double epsilons[MAX_OBSERV][MAX_STATE][MAX_STATE] = {0.0};
+  buildEpsilons(epsilons, hmm, alphas, betas, b); // create epsilon table
+  */
 
 }
 

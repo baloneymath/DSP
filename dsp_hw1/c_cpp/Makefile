@@ -6,7 +6,7 @@ LDFLAGS+=-lm     # link to math library
 
 CC=gcc
 CXX=g++
-CXXFLAGS=-O2
+CXXFLAGS=-O2 -std=c++11
 
 TARGET=train test
 
