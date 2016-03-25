@@ -1,0 +1,8 @@
+Lecture/
+hw_slices/
+
+
+*.swp
+log/*.log
+*.o
+*.mak

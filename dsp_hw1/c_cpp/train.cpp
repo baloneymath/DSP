@@ -1,7 +1,7 @@
 #include "hmm.h"
 
 void
-buildAlphas(double alphas[MAX_OBSERVE][MAX_STATE], const HMM& hmm, const double b[MAX_STATE][MAX_OBSERVE])
+buildAlphas(double alphas[MAX_OBSERV][MAX_STATE], const HMM& hmm, const double b[MAX_STATE][MAX_OBSERV])
 {
   int stateNum = hmm.state_num;
   int observNum = hmm.observ_num;
@@ -18,7 +18,7 @@ buildAlphas(double alphas[MAX_OBSERVE][MAX_STATE], const HMM& hmm, const double 
 }
 
 void
-buildBetas(double betas[MAX_OBSERVE][MAX_STATE], const HMM& hmm, const double b[MAX_STATE][MAX_OBSERVE])
+buildBetas(double betas[MAX_OBSERV][MAX_STATE], const HMM& hmm, const double b[MAX_STATE][MAX_OBSERV])
 {
   int stateNum = hmm.state_num;
   int observNum = hmm.observ_num;
@@ -35,7 +35,7 @@ buildBetas(double betas[MAX_OBSERVE][MAX_STATE], const HMM& hmm, const double b[
 }
 
 void
-buildGammas(double gammas[MAX_OBSERVE][MAX_STATE], const HMM& hmm, const alphas[MAX_OBSERVE][MAX_STATE], const betas[MAX_OBSERVE][MAX_STATE])
+buildGammas(double gammas[MAX_OBSERV][MAX_STATE], const HMM& hmm, const double alphas[MAX_OBSERV][MAX_STATE], const double betas[MAX_OBSERV][MAX_STATE])
 {
   int stateNum = hmm.state_num;
   int observNum = hmm.observ_num;
@@ -52,11 +52,11 @@ buildGammas(double gammas[MAX_OBSERVE][MAX_STATE], const HMM& hmm, const alphas[
 
 void
 buildEpsilons(
-    double epsilons[MAX_OBSERVE][MAX_STATE][MAX_STATE],
+    double epsilons[MAX_OBSERV][MAX_STATE][MAX_STATE],
     const HMM& hmm,
-    const double alphas[MAX_OBSERVE][MAX_STATE],
-    const double betas[MAX_OBSERVE][MAX_STATE],
-    const double b[MAX_STATE][MAX_OBSERVE]
+    const double alphas[MAX_OBSERV][MAX_STATE],
+    const double betas[MAX_OBSERV][MAX_STATE],
+    const double b[MAX_STATE][MAX_OBSERV]
     )
 {
   int stateNum = hmm.state_num;
@@ -84,23 +84,23 @@ int main()
     int stateNum = hmms[i].state_num;
     int observNum = hmms[i].observ_num;
 
-    double b[MAX_STATE][MAX_OBSERVE] = {0.0};
+    double b[MAX_STATE][MAX_OBSERV] = {0.0};
     for (int j = 0; j < stateNum; ++j)
       for (int k = 0; k < observNum; ++k) // calculate each b_j(o)
         b[j][k] += hmms[i].observation[k][j];
 
-    double alphas[MAX_OBSERVE][MAX_STATE] = {0.0};
+    double alphas[MAX_OBSERV][MAX_STATE] = {0.0};
     buildAlphas(alphas, hmms[i], b); // create alpha table
 
-    double betas[MAX_OBSERVE][MAX_STATE] = {0.0};
+    double betas[MAX_OBSERV][MAX_STATE] = {0.0};
     buildBetas(betas, hmms[i], b); // create beta table
 
-    double gammas[MAX_OBSERVE][MAX_STATE] = {0.0};
+    double gammas[MAX_OBSERV][MAX_STATE] = {0.0};
     buildGammas(gammas, hmms[i], alphas, betas); // create gamma table
 
 
     /* $\epsilon_t (i,j)$ */
-    double epsilons[MAX_OBSERVE][MAX_STATE][MAX_STATE] = {0.0};
+    double epsilons[MAX_OBSERV][MAX_STATE][MAX_STATE] = {0.0};
     buildEpsilons(epsilons, hmms[i], alphas, betas, b);
   }
 
