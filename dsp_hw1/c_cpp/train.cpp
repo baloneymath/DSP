@@ -33,7 +33,7 @@ int main(int argc, char * argv[])
   // start training
   for (int _i = 1; _i <= iter; ++_i) {
     char o[MAX_SEQ+1];
-    fscanf(fpseq, "%s", &o[1]);
+    if (fscanf(fpseq, "%s", &o[1]) == EOF) break;
     int T = strlen(&o[1]);
 
     double alpha[MAX_SEQ][MAX_STATE] = {0.0}; // create alpha table
