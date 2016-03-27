@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
         delta_log[_i][1][i] = log(pi[i]) + log(b[o[1] - 'A'][i]);
       for (int t = 2; t <= T; ++t) { // create delta table
         for (int j = 0; j < N; ++j) {
-          double temp = 0.0;
+          double temp = -1e100;
           for (int i = 0; i < N; ++i)
             if (delta_log[_i][t-1][i] + log(a[i][j]) > temp)
               temp = delta_log[_i][t-1][i] + log( a[i][j]);
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     double termination[5] = {0.0}; // P* in each model
 
     for (int _i = 0; _i < 5; ++_i) {
-      double temp = 0.0;
+      double temp = -1e100;
       for (int i = 0; i < hmms[_i].state_num; ++i)
         if (delta_log[_i][T][i] > temp) temp = delta_log[_i][T][i];
       termination[_i] = exp(temp);
@@ -61,8 +61,8 @@ int main(int argc, char* argv[])
       if (termination[_i] > termination[_i-1]) temp = termination[_i];
     for (int _i = 0; _i < 5; ++_i)
       if (termination[_i] == temp) resultNum = _i;
-    fprintf(fp, "model0%d_.txt ", resultNum);
-    fprintf(fp, "%lf\n", termination[resultNum]);
+    fprintf(fp, "model_0%d.txt ", resultNum+1);
+    fprintf(fp, "%e\n", termination[resultNum]);
   }
 
   //dump_models(hmms, 5);
