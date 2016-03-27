@@ -34,12 +34,12 @@ int main(int argc, char* argv[])
       auto &a = hmms[_i].transition;
 
       for (int i = 0; i < N; ++i) // initialize delta
-        delta_log[_i][1][i] = log(pi[i]) + log( b[o[1] - 'A'][i]);
+        delta_log[_i][1][i] = log(pi[i]) + log(b[o[1] - 'A'][i]);
       for (int t = 2; t <= T; ++t) { // create delta table
         for (int j = 0; j < N; ++j) {
           double temp = 0.0;
           for (int i = 0; i < N; ++i)
-            if (delta_log[_i][t-1][i] * a[i][j] > temp)
+            if (delta_log[_i][t-1][i] + log(a[i][j]) > temp)
               temp = delta_log[_i][t-1][i] + log( a[i][j]);
           delta_log[_i][t][j] = temp + log(b[o[t] - 'A'][j]);
         }
@@ -56,13 +56,16 @@ int main(int argc, char* argv[])
     }
 
     size_t resultNum = 0;
+    double temp = termination[0];
     for (int _i = 1; _i < 5; ++_i)
-      if (termination[_i] > termination[resultNum]) resultNum = _i;
+      if (termination[_i] > termination[_i-1]) temp = termination[_i];
+    for (int _i = 0; _i < 5; ++_i)
+      if (termination[_i] == temp) resultNum = _i;
     fprintf(fp, "model0%d_.txt ", resultNum);
     fprintf(fp, "%lf\n", termination[resultNum]);
-
   }
-  dump_models(hmms, 5);
+
+  //dump_models(hmms, 5);
 
   return 0;
 }
