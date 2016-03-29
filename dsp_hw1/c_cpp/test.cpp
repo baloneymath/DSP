@@ -56,12 +56,13 @@ int main(int argc, char* argv[])
     }
 
     size_t resultNum = 0;
-    double temp = termination[0];
-    for (int _i = 1; _i < 5; ++_i)
-      if (termination[_i] > termination[_i-1]) temp = termination[_i];
+    double temp = -1e100;
+    for (int _i = 0; _i < 5; ++_i)
+      if (termination[_i] > temp) temp = termination[_i];
     for (int _i = 0; _i < 5; ++_i)
       if (termination[_i] == temp) resultNum = _i;
-    fprintf(fp, "model_0%d.txt ", resultNum+1);
+    ++resultNum;
+    fprintf(fp, "model_0%d.txt ", resultNum);
     fprintf(fp, "%e\n", termination[resultNum]);
   }
 

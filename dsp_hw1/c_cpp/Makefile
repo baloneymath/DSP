@@ -8,7 +8,7 @@ CC=gcc
 CXX=g++
 CXXFLAGS=-O2 -std=c++11
 
-TARGET=train test
+TARGET=train test acc
 
 .PHONY: all clean
 
@@ -18,7 +18,10 @@ all: $(TARGET)
 train: train.cpp
 	$(CXX) train.cpp $(CXXFLAGS) -o train
 
-test:
+test: test.cpp
+	$(CXX) test.cpp $(CXXFLAGS) -o test
+acc: acc.cpp
+	$(CXX) acc.cpp $(CXXFLAGS) -o acc
 
 clean: 
 	$(RM) $(TARGET)   # type make clean to remove the compiled file
