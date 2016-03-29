@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
   while (fscanf(fptest, "%s", &o[1]) == 1) {
     T = strlen(&o[1]);
 
-    double delta_log[5][MAX_SEQ][MAX_STATE] = {0.0};
+    double delta[5][MAX_SEQ][MAX_STATE] = {0.0};
     for (int _i = 0; _i < 5; ++_i) {
       // alias variables
       int N = hmms[_i].state_num;
@@ -34,14 +34,14 @@ int main(int argc, char* argv[])
       auto &a = hmms[_i].transition;
 
       for (int i = 0; i < N; ++i) // initialize delta
-        delta_log[_i][1][i] = log(pi[i]) + log(b[o[1] - 'A'][i]);
+        delta[_i][1][i] = pi[i] * b[o[1] - 'A'][i];
       for (int t = 2; t <= T; ++t) { // create delta table
         for (int j = 0; j < N; ++j) {
-          double temp = -1e100;
+          double temp = 0.0;
           for (int i = 0; i < N; ++i)
-            if (delta_log[_i][t-1][i] + log(a[i][j]) > temp)
-              temp = delta_log[_i][t-1][i] + log( a[i][j]);
-          delta_log[_i][t][j] = temp + log(b[o[t] - 'A'][j]);
+            if (delta[_i][t-1][i] * a[i][j] > temp)
+              temp = delta[_i][t-1][i] * a[i][j];
+          delta[_i][t][j] = temp * b[o[t] - 'A'][j];
         }
       }
     }
@@ -49,15 +49,15 @@ int main(int argc, char* argv[])
     double termination[5] = {0.0}; // P* in each model
 
     for (int _i = 0; _i < 5; ++_i) {
-      double temp = -1e100;
+      double temp = 0.0;
       for (int i = 0; i < hmms[_i].state_num; ++i)
-        if (delta_log[_i][T][i] > temp) temp = delta_log[_i][T][i];
-      termination[_i] = exp(temp);
+        if (delta[_i][T][i] > temp) temp = delta[_i][T][i];
+      termination[_i] = temp;
     }
 
     size_t resultNum = 0;
-    double temp = -1e100;
-    for (int _i = 0; _i < 5; ++_i)
+    double temp = termination[0];
+    for (int _i = 1; _i < 5; ++_i)
       if (termination[_i] > temp) temp = termination[_i];
     for (int _i = 0; _i < 5; ++_i)
       if (termination[_i] == temp) resultNum = _i;
