@@ -1,4 +1,4 @@
-###########3###
+###############
 CFLAGS = -g -Wall
 CFLAGS = -O2
 ###############
@@ -23,5 +23,5 @@ test: test.cpp
 acc: acc.cpp
 	$(CXX) acc.cpp $(CXXFLAGS) -o acc
 
-clean: 
+clean:
 	$(RM) $(TARGET)   # type make clean to remove the compiled file
