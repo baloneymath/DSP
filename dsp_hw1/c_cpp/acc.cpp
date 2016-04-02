@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
     if (o[7] == ans[7]) ++match;
   }
   double acc = match / counter;
-  cerr << acc;
+  cout << acc;
   fprintf(fpres, "%lf", acc);
 
 
