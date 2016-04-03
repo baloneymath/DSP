@@ -1,0 +1,195 @@
+\documentclass{article}
+
+\usepackage{fancyhdr}
+\usepackage{extramarks}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+%\usepackage{fontspec}
+\usepackage{amsfonts}
+%\usepackage{xeCJK}
+\usepackage{algpseudocode}
+\usepackage{listings}
+%%plots
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning}
+\usepackage{graphicx}
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest} % Allows to place the legend below plot
+\usepgfplotslibrary{units} % Allows to enter the units nicely
+
+
+%
+% Basic Document Settings
+%
+
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1}
+
+\pagestyle{fancy}
+\lhead{\AuthorName}
+\chead{\Class\ (\ClassInstructor\ \ClassTime): \Title}
+\rhead{\firstxmark}
+\lfoot{\lastxmark}
+\cfoot{\thepage}
+
+\renewcommand\headrulewidth{0.4pt}
+\renewcommand\footrulewidth{0.4pt}
+
+\setlength\parindent{0pt}
+
+\newcommand{\Title}{Report \#1}
+\newcommand{\FinishDate}{\today}
+\newcommand{\Class}{Digital Speech Processing}
+\newcommand{\ClassTime}{}
+\newcommand{\ClassInstructor}{Professor Lin-Shan Lee}
+\newcommand{\Department}{EE2}
+\newcommand{\AuthorID}{b03901016}
+\newcommand{\AuthorName}{Hao Chen}
+
+%util
+\newcommand{\horline}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+\newcommand\n{\mbox{\qquad}}
+
+%
+% Title Page
+%
+
+\title{
+{National Taiwan University}\\    
+    \textmd{\textbf{\Class:\ \Title}}
+}
+
+\author{
+	\Department \ \AuthorID \\
+	\textbf{\AuthorName}
+}
+\date{
+	\today \\
+	\horline{1pt}
+}
+
+
+
+\renewcommand{\part}[1]{\textbf{\large Part \Alph{partCounter}}\stepcounter{partCounter}\\}
+
+%
+% Various Helper Commands
+%
+
+% Useful for algorithms
+\newcommand{\alg}[1]{\textsc{\bfseries \footnotesize #1}}
+
+% For derivatives
+\newcommand{\deriv}[1]{\frac{\mathrm{d}}{\mathrm{d}x} (#1)}
+
+% For partial derivatives
+\newcommand{\pderiv}[2]{\frac{\partial}{\partial #1} (#2)}
+
+% Integral dx
+\newcommand{\dx}{\mathrm{d}x}
+
+% Alias for the Solution section header
+\newcommand{\solution}{\textbf{\large Solution}}
+
+% Probability commands: Expectation, Variance, Covariance, Bias
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Bias}{\mathrm{Bias}}
+
+
+\begin{document}
+\maketitle
+\section{Introduciton}
+\n This program simply simulate the Hidden Markov Model(HMM), the whole process include 
+two parts | training and testing. The training part constructs the models with specified
+ input sequences, while the testing part identify datas to the model it belongs.
+ 
+\section{Environment}
+\begin{itemize}
+	\item OS : Linux mint 17.2 Rafaela
+	\item Kernel : x86\_64 Linux 3.16.0-38-generic
+	\item Shell : zsh 5.0.2
+\end{itemize}
+
+\section{Steps}
+%\subsection{Formulation:}
+%\begin{itemize}
+%	\item $\bar{o}_t = [x_1,x_2,\dots,x_D]^T$ | feature vectors for frame at time t
+%	\item $q_t = 1,2,3,\dots,N$ | state number for feature vector $\bar{o}_t$
+%	\item $A = [a_{ij}],\ a_{ij} = P[q_t=j\ |\ q_{t-1}=i]$ | state transition probability
+%	\item $B = [b_j(\bar{o})],\ j = 1,2,\dots,N$ | observation probability
+%	\item $\pi = [\pi_1,\pi_2,\dots,\pi_N]$ | initial probabilities
+%\end{itemize}
+
+\subsection{Training:}
+\n Given $O$ and an initial model $\lambda (A,B,\pi)$, adjust $\lambda$ to maximize $P(\bar{O} | \lambda)$. (Baum-Welch Algorithm)
+\begin{enumerate}
+	\item Read the initail model | \texttt{model\_init.txt}
+	\item For each model, read its sequence model | \texttt{seq\_model\_0X}.txt
+	\item For each iteration, calculate and accumulate $\epsilon_t(i,j)$ and $\gamma_t(i)$, and update model parameters.
+	\item Ouput files | \texttt{model\_0X.txt} 
+\end{enumerate} 
+
+\subsection{Testing:}
+\n Given model $\lambda$ and $O$, find the best sequences to maximize $P(O|\lambda,q)$. Calculate $P(O|\lambda)$ for each of the five models. (Viterbi Algorithms)
+\begin{enumerate}
+	\item Input file | \texttt{testing\_data0X.txt}
+	\item For each sequence, output the hypothesis model and it's likelihood to \texttt{resultX.txt}
+	\item Calculate the classification accuracy and ouput to \texttt{acc.txt}
+\end{enumerate}
+
+\section{Usage}
+\begin{itemize}
+	\item \texttt{Makefile} : Simply type "\texttt{make}" to build the programs, "\texttt{make clean}" to remove the program.
+	\item \texttt{train} : Follow the form "\texttt{./train iter model\_init.txt seq\_model\_0X.txt model\_0X.txt}" to execute. (While "\texttt{iter}" is how many times you update your model.) Else you'd get an assert message.
+	\item \texttt{test} : Follow the form "\texttt{./test modellist.txt testing\_dataX.txt resultX.txt}" to execute.
+\end{itemize}
+
+\section{Result}
+\n Since the training data is limit, we can repeat training process again and again. As we iterate the training process more, the model become more well-trained, the characteristc of each model become more obvious, so we have better performance when testing "\texttt{testing\_dataX.txt}" using the well-trained models. \\
+The following table record the experiment of testing "\texttt{testing\_data01.txt}" with "\texttt{model\_01$\sim$05.txt}"
+\begin{tabular}[t]{|l|l|l|l|l|l|l|l|l|l|l|}
+\hline
+iter & 1 & 10 & 20 & 50 & 150 & 300 & 900 & 1000 & \textbf{1040} & 2000\\
+\hline 
+accuracy & 0.7660 & 0.5408 & 0.7912 & 0.8228 & 0.8608 & 0.8448 & 0.8704 & 0.8700 & \textbf{0.8712} & 0.8692\\
+\hline
+\end{tabular}
+
+\begin{figure}[h!]\
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{semilogxaxis}[
+          width=0.7\linewidth, % Scale the plot to \linewidth
+          grid=major, % Display a grid
+          grid style={dashed,gray!30}, % Set the style
+          xlabel=iter, % Set the labels
+          ylabel=accuracy ,
+          x unit=, % Set the respective units
+          y unit= ,
+          legend style={nodes=right},
+          legend pos= north west,
+          % x tick label style={rotate=90} % Display labels sideways
+        ]
+        \addplot 
+        % add a plot from table; you select the columns by using the actual name in
+        % the .csv file (on top)
+        table[x=column 1,y=column 2,col sep=comma] {../c_cpp/training_result.csv}; 
+        \legend{Exp - 1}
+      \end{semilogxaxis}
+    \end{tikzpicture}
+    \caption{The accuracies of \texttt{result1.txt} from iter = 1 to 2000}
+  \end{center}
+\end{figure}
+
+\n We can find out that the accuracy has the lowest value at about $iter = 10$, while has the highest value at about $iter = 869$, this result appear because the training data of each model is limited. But we can observe that the accuracy does not have significant change when $iter$ is large enough. \\
+\n The limit that computer can calculate might cause the wrong testing answer, because the probability we get after doing "Viterbi Algorithm" is really small, about the magnitude of $10^{-40}$ to $10^{-60}$, some might be even smaller that it cannot be estimate. Using the logarithm is a method to improve accuracy, but it makes the program less efficient, and do not have a lot of changes, so I decided not to use it in my program.
+\end{document}
