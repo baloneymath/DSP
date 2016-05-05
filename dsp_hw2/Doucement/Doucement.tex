@@ -1,0 +1,139 @@
+\documentclass{article}
+
+\usepackage{fancyhdr}
+\usepackage{extramarks}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+%\usepackage{fontspec}
+\usepackage{amsfonts}
+%\usepackage{xeCJK}
+\usepackage{algpseudocode}
+\usepackage{listings}
+%%plots
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning}
+\usepackage{graphicx}
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest} % Allows to place the legend below plot
+\usepgfplotslibrary{units} % Allows to enter the units nicely
+
+
+%
+% Basic Document Settings
+%
+
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1}
+
+\pagestyle{fancy}
+\lhead{\AuthorName}
+\chead{\Class\ (\ClassInstructor\ \ClassTime): \Title}
+\rhead{\firstxmark}
+\lfoot{\lastxmark}
+\cfoot{\thepage}
+
+\renewcommand\headrulewidth{0.4pt}
+\renewcommand\footrulewidth{0.4pt}
+
+\setlength\parindent{0pt}
+
+\newcommand{\Title}{Report \#2}
+\newcommand{\FinishDate}{\today}
+\newcommand{\Class}{Digital Speech Processing}
+\newcommand{\ClassTime}{}
+\newcommand{\ClassInstructor}{Professor Lin-Shan Lee}
+\newcommand{\Department}{EE2}
+\newcommand{\AuthorID}{b03901016}
+\newcommand{\AuthorName}{Hao Chen}
+
+%util
+\newcommand{\horline}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+\newcommand\n{\mbox{\qquad}}
+
+%
+% Title Page
+%
+
+\title{
+{National Taiwan University}\\    
+    \textmd{\textbf{\Class:\ \Title}}
+}
+
+\author{
+	\Department \ \AuthorID \\
+	\textbf{\AuthorName}
+}
+\date{
+	\today \\
+	\horline{1pt}
+}
+
+
+
+\renewcommand{\part}[1]{\textbf{\large Part \Alph{partCounter}}\stepcounter{partCounter}\\}
+
+%
+% Various Helper Commands
+%
+
+% Useful for algorithms
+\newcommand{\alg}[1]{\textsc{\bfseries \footnotesize #1}}
+
+% For derivatives
+\newcommand{\deriv}[1]{\frac{\mathrm{d}}{\mathrm{d}x} (#1)}
+
+% For partial derivatives
+\newcommand{\pderiv}[2]{\frac{\partial}{\partial #1} (#2)}
+
+% Integral dx
+\newcommand{\dx}{\mathrm{d}x}
+% Alias for the Solution section header
+\newcommand{\solution}{\textbf{\large Solution}}
+
+% Probability commands: Expectation, Variance, Covariance, Bias
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Bias}{\mathrm{Bias}}
+
+
+\begin{document}
+\maketitle
+\section{Introduciton}
+\n Using HTK toolkit (HCompV, HCopy, HHed, HERest...) to build the HMM models of continuous signal and test the accuracy. 
+
+\section{Environment}
+\begin{itemize}
+	\item OS : Linux mint 17.2 Rafaela
+	\item Kernel : x86\_64 Linux 3.16.0-38-generic
+	\item Shell : zsh 5.0.2
+\end{itemize}
+
+\section{Steps}
+\begin{enumerate}
+	\item Run all shellscripts \\(
+		\texttt{
+			 00\_clean\_all.sh,
+			 01\_run\_HCopy.sh,
+			 02\_run\_HCompV.sh,
+			 03\_training.sh,
+			 04\_testing.sh
+		} )
+	\item Check \texttt{accuracy} in \texttt{/result} if it's \texttt{74.34}
+	\item Change the data in "\texttt{proto}" to increase states and
+		"\texttt{mix2\_10.hed}" to increase Gaussian mixtures.
+	\item Maximize the accuracy.
+\end{enumerate}
+
+\section{Result}
+\n After running all the five shellscripts, I just change the number of states to 10, and increase the number of Gaussian mixtures to 12, then I get the accuracy "\texttt{95.97}".
+\\
+\n I found that the number of iteration does not effect a lot, so I didn't optimize it.
+\end{document}
