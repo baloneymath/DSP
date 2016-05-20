@@ -72,11 +72,11 @@ int main(int argc, char* argv[])
     sort(vec.begin(), vec.end());
     vec.resize(unique(vec.begin(), vec.end()) - vec.begin());
     for (auto wc : it->second) {
-      ofs << HI(wc) << LO(wc);
+      ofs << " " << HI(wc) << LO(wc);
     }
     ofs << endl;
     for (auto wc : it->second) {
-      ofs << HI(wc) << LO(wc) << " " << HI(wc) << LO(wc) << endl;
+      ofs << HI(wc) << LO(wc) << "  " << HI(wc) << LO(wc) << endl;
     }
   }
 
