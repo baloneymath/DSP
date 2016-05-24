@@ -30,6 +30,7 @@ int main(int argc, char* argv[])
   if (!ifs.is_open()) cerr << "Error opening file!!\n";
 
   map<int, vector<int>> target;
+  vector<int> allWord;
   // mapping
   string buf;
   while (getline(ifs, buf)) {
@@ -73,11 +74,14 @@ int main(int argc, char* argv[])
     vec.resize(unique(vec.begin(), vec.end()) - vec.begin());
     for (auto wc : it->second) {
       ofs << " " << HI(wc) << LO(wc);
+      allWord.push_back(wc);
     }
     ofs << endl;
-    for (auto wc : it->second) {
-      ofs << HI(wc) << LO(wc) << "  " << HI(wc) << LO(wc) << endl;
-    }
+  }
+  sort(allWord.begin(), allWord.end());
+  allWord.resize(unique(allWord.begin(), allWord.end()) - allWord.begin());
+  for (auto i : allWord) {
+    ofs << HI(i) << LO(i) << "  " << HI(i) << LO(i) << endl;
   }
 
   return 0;
