@@ -84,20 +84,7 @@ int main(int argc, char* argv[])
       allWord[key].push_back(hc);
     }
   }
-/*
-int temp = 0;
-string s = "今";
-temp = s[0]&255;
-temp <<=8;
-temp |=s[1]&255;
-//for (auto i : allWord[temp]) cout << HI(i) <<LO(i) <<endl;
-for (auto i = allWord.begin(); i != allWord.end(); ++i) {
-  for (auto j = 0; j < i->second.size(); ++j)
-    cout << HI(i->second[j]) << LO(i->second[j]) <<' ';
-  cout <<endl;
-}
-cerr << allWord[temp].size();
-exit(0);*/
+
   while (getline(file, buf)) { // start running viterbi per sentence
     int pos = 0;
 
