@@ -159,7 +159,9 @@ exit(0);*/
             before.push_back(HI(allWord[word1][j]));
             before.push_back(LO(allWord[word1][j]));
             double prob = getProb(str, before);
-            if (prob > max) { max = prob; trace = j; }
+            if (prob + LPtable[counter-2][j]> max) {
+              max = prob + LPtable[counter-2][j] ; trace = j;
+            }
           }
           LPtable[counter-1].push_back(max);
           traceTable[counter-1].push_back(trace);
@@ -180,7 +182,6 @@ exit(0);*/
     for (int i = traceTable.size()-1; i >= 0; --i) {
       viterbi_path.push_back(p);
       p = traceTable[i][p];
-      cerr << i <<' ';
     }
 
     ofs << "<s> ";
