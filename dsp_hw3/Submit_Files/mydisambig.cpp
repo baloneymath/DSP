@@ -101,7 +101,6 @@ int main(int argc, char* argv[])
       return wc;
     };
 
-    int word1 = Vocab_None;
     int counter = 1;
     vector<vector<double>> LPtable;
     vector<vector<string>> Wtable;
@@ -143,7 +142,6 @@ int main(int argc, char* argv[])
         }
         Wtable[counter-1].push_back(str);
       }
-      word1 = word2;
       ++counter;
     }
 
