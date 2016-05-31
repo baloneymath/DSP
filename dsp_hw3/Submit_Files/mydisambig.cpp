@@ -71,10 +71,9 @@ int main(int argc, char* argv[])
       }
       if (pos >= buf.size()) return 0;
       wc = buf[pos] & 255;
-      wc = wc << 8;
+      wc <<= 8;
       wc |= buf[pos+1] & 255;
-      ++pos;
-      ++pos;
+      pos += 2;
       return wc;
     };
     int key = yield1big5();
@@ -96,10 +95,9 @@ int main(int argc, char* argv[])
       }
       if (pos >= buf.size()) return 0;
       wc = buf[pos] & 255;
-      wc = wc << 8;
+      wc <<= 8;
       wc |= buf[pos+1] & 255;
-      ++pos;
-      ++pos;
+      pos += 2;
       return wc;
     };
 
@@ -114,12 +112,9 @@ int main(int argc, char* argv[])
     while (true) { // read each word
       int word2 = yield1big5();
       if (word2 != 0) {
-        vector<double> tempP;
-        LPtable.push_back(tempP);
-        vector<string> tempW;
-        Wtable.push_back(tempW);
-        vector<int> tempT;
-        traceTable.push_back(tempT);
+        vector<double> tempP;  LPtable.push_back(tempP);
+        vector<string> tempW;  Wtable.push_back(tempW);
+        vector<int> tempT;     traceTable.push_back(tempT);
       }
       if (word2 == 0) { // last word
         for (size_t i = 0; i < allWord[word1].size(); ++i) {
@@ -145,9 +140,9 @@ int main(int argc, char* argv[])
             string before;
             before.push_back(HI(allWord[word1][j]));
             before.push_back(LO(allWord[word1][j]));
-            double prob = getProb(str, before);
-            if (prob + LPtable[counter-2][j]> max) {
-              max = prob + LPtable[counter-2][j] ; trace = j;
+            double prob = getProb(str, before) + LPtable[counter-2][j];
+            if (prob  > max) {
+              max = prob ; trace = j;
             }
           }
           LPtable[counter-1].push_back(max);
@@ -180,5 +175,4 @@ int main(int argc, char* argv[])
 
   return 0;
 }
-
 
