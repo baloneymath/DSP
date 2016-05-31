@@ -1,8 +1,8 @@
 # The following two variable will be commandline determined by TA
 # For testing, you could uncomment them.
-SRIPATH ?= /data/DSP_HW3/103_2/srilm-1.5.10
-MACHINE_TYPE ?= i686-m64
-LM ?= bigram.lm
+SRIPATH = /home/chi777/Desktop/DSP/srilm-1.5.10
+MACHINE_TYPE = i686-m64
+LM = bigram.lm
 
 CXX = g++
 CXXFLAGS = -O3 -I$(SRIPATH)/include -w -std=c++11
@@ -23,19 +23,12 @@ $(TARGET): $(OBJ) -loolm -ldstruct -lmisc
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $<
 run:
-        #TODO How to run your code toward different txt? 
 	for i in $(shell seq 1 10) ; do \
 		echo "Running $$i.txt"; \
-		./mydisambig -text testdata/$$i.txt -map $(TO) -lm $(LM) -order 2 > result2/$$i.txt; \
+		./mydisambig testdata/$$i.txt result2/$$i.txt; \
 	done;
 map: mapping
-        #TODO How to map?
 	echo "Mapping!"
 	./mapping $(FROM) $(TO)
-        #matlab mapping.m $(FROM) $(TO)
-        #python mapping.py $(FROM) $(TO)
-        #sh mapping.sh $(FROM) $(TO)
-        #perl mapping.pl Big5-ZhuYin.map ZhuYin-Big5.map
 clean:
-	$(RM) $(OBJ) $(TARGET)
-
+	$(RM) $(OBJ) $(TARGET) mapping ZhuYin-Big5.map

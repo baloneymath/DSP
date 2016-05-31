@@ -32,7 +32,7 @@ char LO(int wc)
 double getProb(string s1, string s2)
 {
   VocabIndex wid = voc.getIndex(s1.c_str());
-  if (wid == Vocab_None) return -1e100;
+  if (wid == Vocab_None) return -1e5;
   VocabIndex context[] = { voc.getIndex(s2.c_str()), Vocab_None };
   return lm.wordProb( wid, context);
 }
@@ -101,13 +101,11 @@ int main(int argc, char* argv[])
       return wc;
     };
 
-
     int word1 = Vocab_None;
     int counter = 1;
     vector<vector<double>> LPtable;
     vector<vector<string>> Wtable;
     vector<vector<int>> traceTable;
-
 
     while (true) { // read each word
       int word2 = yield1big5();
@@ -117,10 +115,8 @@ int main(int argc, char* argv[])
         vector<int> tempT;     traceTable.push_back(tempT);
       }
       if (word2 == 0) { // last word
-        for (size_t i = 0; i < allWord[word1].size(); ++i) {
-          string before;
-          before.push_back(HI(allWord[word1][i]));
-          before.push_back(LO(allWord[word1][i]));
+        for (size_t i = 0; i < Wtable[counter-2].size(); ++i) {
+          string before = Wtable[counter-2][i];
           LPtable[counter-2][i] += getProb("</s>", before);
         }
         break;
@@ -134,16 +130,13 @@ int main(int argc, char* argv[])
           traceTable[counter-1].push_back(0);
         }
         else if (counter > 1 && word2 != 0) { // not last word
-          double max = -1e100;
+          string before = Wtable[counter-2][0];
+          double max = getProb(str, before) + LPtable[counter-2][0];
           int trace = 0;
-          for (size_t j = 0; j < allWord[word1].size(); ++j) { // find max prob
-            string before;
-            before.push_back(HI(allWord[word1][j]));
-            before.push_back(LO(allWord[word1][j]));
+          for (size_t j = 1; j < Wtable[counter-2].size(); ++j) { // find max prob
+            string before = Wtable[counter-2][j];
             double prob = getProb(str, before) + LPtable[counter-2][j];
-            if (prob  > max) {
-              max = prob ; trace = j;
-            }
+            if (prob > max) { max = prob ; trace = j; }
           }
           LPtable[counter-1].push_back(max);
           traceTable[counter-1].push_back(trace);
@@ -154,10 +147,11 @@ int main(int argc, char* argv[])
       ++counter;
     }
 
-    int MM = LPtable[counter-2][0];
+    double MM = LPtable[counter-2][0];
     int p = 0;
-    for (size_t i = 1; i < LPtable[counter-2].size(); ++i) {
-      if (LPtable[counter-2][i] > MM) { MM = LPtable[counter-2][i]; p = i; }
+    for (size_t i = 1; i < LPtable[counter-2].size(); ++i) { // find viterbi_path start point
+      double tt = LPtable[counter-2][i];
+      if (tt > MM) { MM = tt; p = i; }
     }
 
     vector<int> viterbi_path;
@@ -171,8 +165,8 @@ int main(int argc, char* argv[])
       ofs << Wtable[i][viterbi_path[Wtable.size()-i-1]] << " ";
     }
     ofs << "</s>" << endl;
-  }
 
+  }
   return 0;
 }
 
